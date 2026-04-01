@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "JuanBlanco.solidity",
+        "NomicFoundation.hardhat-solidity",
+        "protofire.solhint",
+        "esbenp.prettier-vscode"
+    ]
+}
