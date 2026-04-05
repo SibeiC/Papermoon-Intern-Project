@@ -1,0 +1,9 @@
+{
+    "name": "papermoon-intern-project",
+    "private": true,
+    "version": "1.0.0",
+    "devDependencies": {
+        "prettier": "^3.5.3",
+        "prettier-plugin-solidity": "^1.4.3"
+    }
+}
