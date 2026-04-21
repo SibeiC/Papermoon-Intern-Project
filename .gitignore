@@ -224,3 +224,13 @@ node_modules
 
 # Compiled contract artifacts
 bin/
+
+### Hardhat ###
+# Compile cache (source hashes, build metadata)
+cache/
+# ABIs + bytecode emitted by `hardhat compile`
+artifacts/
+# TypeChain-generated TS bindings (from @nomicfoundation/hardhat-toolbox)
+typechain-types/
+# solidity-coverage output
+coverage.json
