@@ -1,0 +1,15 @@
+Token logos in this folder
+==========================
+
+btc.svg, eth.svg, usdc.svg, usdt.svg
+    Source: https://github.com/spothq/cryptocurrency-icons
+    License: CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)
+    Attribution: SpotHQ (https://spothq.com)
+
+sbc.png
+    Source: favicon from https://github.chencraft.com/ (Sibei Chen's site).
+    Used as the SibeiCoin (SBC) test-token logo. Resized to 128x128.
+
+WETH
+    No dedicated logo file. The UI reuses eth.svg with a "W" badge overlay
+    rendered by the TokenLogo component to differentiate visually.

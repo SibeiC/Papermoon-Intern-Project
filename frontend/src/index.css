@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+    --color-bg: oklch(0.18 0.02 260);
+    --color-card: oklch(0.24 0.02 260);
+    --color-border: oklch(0.32 0.02 260);
+    --color-accent: oklch(0.72 0.18 280);
+    --color-accent-hover: oklch(0.66 0.2 280);
+}
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+body {
+    font-family:
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Tailwind v4 dropped the legacy cursor:pointer on buttons because the CSS
+   spec default is `auto`. Opt back in for interactive elements; respect
+   :disabled / [aria-disabled] so unavailable buttons still feel inert. */
+button:not(:disabled):not([aria-disabled="true"]),
+[role="button"]:not([aria-disabled="true"]),
+[role="option"]:not([aria-disabled="true"]),
+summary:not([aria-disabled="true"]) {
+    cursor: pointer;
+}
+
+@keyframes pop-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
