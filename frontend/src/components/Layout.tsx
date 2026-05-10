@@ -10,7 +10,10 @@ const navItems = [
 ] as const;
 
 function navLinkClass({ isActive }: { isActive: boolean }): string {
-    const base = "px-3 py-1.5 rounded-md text-sm font-medium transition";
+    // Tighter horizontal padding on mobile so all four items + the connect
+    // button fit within a 360px viewport.
+    const base =
+        "px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition whitespace-nowrap";
     return isActive
         ? `${base} bg-white/10 text-white`
         : `${base} text-slate-400 hover:text-white hover:bg-white/5`;
@@ -20,12 +23,13 @@ export default function Layout() {
     return (
         <div className="min-h-full flex flex-col">
             <header className="border-b border-white/10">
-                <div className="mx-auto max-w-5xl flex items-center justify-between px-4 py-3">
-                    <div className="flex items-center gap-6">
-                        <span className="text-base font-semibold tracking-tight">
+                <div className="mx-auto max-w-5xl flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 py-3">
+                    <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+                        {/* Brand hides below sm so the nav + connect button fit. */}
+                        <span className="hidden sm:inline-block text-base font-semibold tracking-tight whitespace-nowrap">
                             Sibei's Uniswap V2 Setup
                         </span>
-                        <nav className="flex items-center gap-1">
+                        <nav className="flex items-center gap-0.5 sm:gap-1">
                             {navItems.map((item) => (
                                 <NavLink key={item.to} to={item.to} className={navLinkClass}>
                                     {item.label}
