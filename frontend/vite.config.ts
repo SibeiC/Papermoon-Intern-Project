@@ -16,4 +16,16 @@ export default defineConfig({
             "@deployments": fileURLToPath(new URL("../deployments", import.meta.url)),
         },
     },
+    build: {
+        // Split web3 deps into their own chunk so the main bundle only ships
+        // app code on first load. Cuts initial JS by roughly half on mobile
+        // and keeps the chunk-size warning quiet.
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    web3: ["wagmi", "viem", "@tanstack/react-query"],
+                },
+            },
+        },
+    },
 });

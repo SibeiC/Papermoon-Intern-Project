@@ -11,6 +11,7 @@ import { TOKENS } from "../data/tokens.ts";
 import { addLiquidity, removeLiquidity } from "../services/liquidity.ts";
 import { UserRejectedError } from "../services/errors.ts";
 import { isPositiveAmount, sanitizeAmountInput } from "../utils/amount.ts";
+import { aliasSymbols } from "../utils/path.ts";
 import { awaitConfirmation } from "../utils/tx.ts";
 import type { Token } from "../types/token.ts";
 
@@ -114,7 +115,7 @@ export default function PoolPage() {
                         label="Token A"
                         amount={amountA}
                         token={tokenA}
-                        disabledTokens={[tokenB.symbol]}
+                        disabledTokens={aliasSymbols(tokenB)}
                         onAmountChange={setAmountA}
                         onTokenChange={setTokenA}
                     />
@@ -134,7 +135,7 @@ export default function PoolPage() {
                         label="Token B"
                         amount={amountB}
                         token={tokenB}
-                        disabledTokens={[tokenA.symbol]}
+                        disabledTokens={aliasSymbols(tokenA)}
                         onAmountChange={setAmountB}
                         onTokenChange={setTokenB}
                     />
@@ -176,14 +177,14 @@ export default function PoolPage() {
                             <div className="flex items-center gap-2">
                                 <TokenSelect
                                     token={tokenA}
-                                    disabledTokens={[tokenB.symbol]}
+                                    disabledTokens={aliasSymbols(tokenB)}
                                     onChange={setTokenA}
                                     ariaLabel="Token A"
                                 />
                                 <span className="text-slate-500 text-sm">/</span>
                                 <TokenSelect
                                     token={tokenB}
-                                    disabledTokens={[tokenA.symbol]}
+                                    disabledTokens={aliasSymbols(tokenA)}
                                     onChange={setTokenB}
                                     ariaLabel="Token B"
                                 />

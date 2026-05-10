@@ -16,12 +16,19 @@ export class UserRejectedError extends Error {
 }
 
 // Re-throws a wallet-rejection error as our friendly subclass; lets every
-// other error propagate untouched. Detects both viem's named class AND the
-// EIP-1193 numeric code so we don't break if the import alias drifts.
+// other error propagate untouched. Walks the `cause` chain because viem
+// typically wraps UserRejectedRequestError inside a ContractFunctionExecution-
+// or BaseError, so a flat `.name === "UserRejectedRequestError"` check on
+// the outermost error misses the rejection. The depth cap prevents
+// pathological cycles.
 export function rethrowFriendly(err: unknown): never {
-    const e = err as { code?: number; name?: string };
-    if (e?.code === 4001 || e?.name === "UserRejectedRequestError") {
-        throw new UserRejectedError();
+    let cur: unknown = err;
+    for (let depth = 0; depth < 8 && cur != null; depth++) {
+        const e = cur as { code?: number; name?: string; cause?: unknown };
+        if (e.code === 4001 || e.name === "UserRejectedRequestError") {
+            throw new UserRejectedError();
+        }
+        cur = e.cause;
     }
     throw err;
 }

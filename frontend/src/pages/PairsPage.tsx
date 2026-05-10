@@ -39,7 +39,7 @@ export default function PairsPage() {
                 </div>
             )}
 
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
+            <div className="overflow-x-auto rounded-xl border border-white/10 bg-white/5">
                 <table className="w-full text-sm">
                     <thead className="bg-white/5 text-xs uppercase tracking-wide text-slate-400">
                         <tr>

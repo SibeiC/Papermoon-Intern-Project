@@ -10,7 +10,7 @@ import { TOKENS } from "../data/tokens.ts";
 import { executeSwap, getSwapQuote } from "../services/swap.ts";
 import { UserRejectedError } from "../services/errors.ts";
 import { isPositiveAmount } from "../utils/amount.ts";
-import { buildSwapPath } from "../utils/path.ts";
+import { aliasSymbols, buildSwapPath } from "../utils/path.ts";
 import { awaitConfirmation } from "../utils/tx.ts";
 import type { Token } from "../types/token.ts";
 
@@ -133,7 +133,7 @@ export default function SwapPage() {
                     label="From"
                     amount={amountIn}
                     token={tokenIn}
-                    disabledTokens={[tokenOut.symbol]}
+                    disabledTokens={aliasSymbols(tokenOut)}
                     onAmountChange={setAmountIn}
                     onTokenChange={setTokenIn}
                 />
@@ -162,7 +162,7 @@ export default function SwapPage() {
                     label="To (estimated)"
                     amount={amountOut}
                     token={tokenOut}
-                    disabledTokens={[tokenIn.symbol]}
+                    disabledTokens={aliasSymbols(tokenIn)}
                     onAmountChange={setAmountOut}
                     onTokenChange={setTokenOut}
                     readOnly
