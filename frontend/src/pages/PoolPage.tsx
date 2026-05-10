@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useAccount, useConfig } from "wagmi";
+import { useEffect, useMemo, useState } from "react";
+import { formatUnits, parseUnits } from "viem";
+import { useAccount, useConfig, useReadContract } from "wagmi";
 import { sepolia } from "wagmi/chains";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -8,12 +9,17 @@ import SlippageControl, { DEFAULT_AUTO_BPS } from "../components/SlippageControl
 import TokenInput from "../components/TokenInput.tsx";
 import TokenSelect from "../components/TokenSelect.tsx";
 import { TOKENS } from "../data/tokens.ts";
+import { FACTORY_ADDRESS } from "../contracts/addresses.ts";
+import { UNISWAP_V2_FACTORY_ABI } from "../contracts/abis/UniswapV2Factory.ts";
+import { UNISWAP_V2_PAIR_ABI } from "../contracts/abis/UniswapV2Pair.ts";
 import { addLiquidity, removeLiquidity } from "../services/liquidity.ts";
 import { UserRejectedError } from "../services/errors.ts";
 import { isPositiveAmount, sanitizeAmountInput } from "../utils/amount.ts";
 import { aliasSymbols } from "../utils/path.ts";
 import { awaitConfirmation } from "../utils/tx.ts";
 import type { Token } from "../types/token.ts";
+
+const ZERO_ADDR = "0x0000000000000000000000000000000000000000";
 
 type Mode = "add" | "remove";
 type Phase = "idle" | "signing" | "confirming";
@@ -32,12 +38,111 @@ export default function PoolPage() {
     const [tokenB, setTokenB] = useState<Token>(DEFAULT_B);
     const [amountA, setAmountA] = useState("");
     const [amountB, setAmountB] = useState("");
+    // Tracks which side the user last typed in. The opposite side is
+    // auto-populated from the pool ratio on every reserve/token change.
+    const [lastEdited, setLastEdited] = useState<"A" | "B" | null>(null);
     const [liquidity, setLiquidity] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [phase, setPhase] = useState<Phase>("idle");
     const pending = phase !== "idle";
 
     const [slippageBps, setSlippageBps] = useState(DEFAULT_AUTO_BPS);
+
+    // --- pair / reserve reads (Add mode only) ---------------------------------
+
+    const differentTokens = tokenA.symbol !== tokenB.symbol;
+    const pairLookupEnabled = mode === "add" && differentTokens;
+
+    const { data: pairAddrRaw } = useReadContract({
+        address: FACTORY_ADDRESS,
+        abi: UNISWAP_V2_FACTORY_ABI,
+        functionName: "getPair",
+        args: [tokenA.address, tokenB.address],
+        query: { enabled: pairLookupEnabled },
+    });
+    const pairAddress =
+        typeof pairAddrRaw === "string" && pairAddrRaw !== ZERO_ADDR
+            ? (pairAddrRaw as `0x${string}`)
+            : null;
+    const pairExists = pairAddress !== null;
+
+    const { data: reservesData } = useReadContract({
+        address: pairAddress ?? ZERO_ADDR,
+        abi: UNISWAP_V2_PAIR_ABI,
+        functionName: "getReserves",
+        query: { enabled: pairLookupEnabled && pairExists },
+    });
+    const { data: token0Addr } = useReadContract({
+        address: pairAddress ?? ZERO_ADDR,
+        abi: UNISWAP_V2_PAIR_ABI,
+        functionName: "token0",
+        query: { enabled: pairLookupEnabled && pairExists },
+    });
+
+    // Resolve reserves into the caller's (A, B) order. null means "can't
+    // auto-populate yet" — the user has to provide both sides freely.
+    const reserves = useMemo<{ a: bigint; b: bigint } | null>(() => {
+        if (!reservesData || !token0Addr) return null;
+        const tuple = reservesData as readonly [bigint, bigint, number];
+        const [r0, r1] = tuple;
+        if (r0 === 0n || r1 === 0n) return null;
+        const aIs0 = tokenA.address.toLowerCase() === (token0Addr as string).toLowerCase();
+        return aIs0 ? { a: r0, b: r1 } : { a: r1, b: r0 };
+    }, [reservesData, token0Addr, tokenA.address]);
+
+    const canAutoPopulate = pairLookupEnabled && pairExists && reserves !== null;
+
+    function quoteOther(
+        srcAmount: string,
+        srcDecimals: number,
+        dstDecimals: number,
+        srcReserve: bigint,
+        dstReserve: bigint,
+    ): string {
+        if (!isPositiveAmount(srcAmount)) return "";
+        const srcRaw = parseUnits(srcAmount, srcDecimals);
+        const dstRaw = (srcRaw * dstReserve) / srcReserve;
+        return formatUnits(dstRaw, dstDecimals);
+    }
+
+    // A → B
+    useEffect(() => {
+        if (lastEdited !== "A" || !canAutoPopulate || !reserves) return;
+        setAmountB(
+            quoteOther(amountA, tokenA.decimals, tokenB.decimals, reserves.a, reserves.b),
+        );
+    }, [
+        lastEdited,
+        canAutoPopulate,
+        reserves,
+        amountA,
+        tokenA.decimals,
+        tokenB.decimals,
+    ]);
+
+    // B → A
+    useEffect(() => {
+        if (lastEdited !== "B" || !canAutoPopulate || !reserves) return;
+        setAmountA(
+            quoteOther(amountB, tokenB.decimals, tokenA.decimals, reserves.b, reserves.a),
+        );
+    }, [
+        lastEdited,
+        canAutoPopulate,
+        reserves,
+        amountB,
+        tokenA.decimals,
+        tokenB.decimals,
+    ]);
+
+    function onAmountAChange(next: string): void {
+        setAmountA(next);
+        setLastEdited("A");
+    }
+    function onAmountBChange(next: string): void {
+        setAmountB(next);
+        setLastEdited("B");
+    }
 
     const canSubmit =
         isConnected &&
@@ -72,6 +177,7 @@ export default function PoolPage() {
             if (mode === "add") {
                 setAmountA("");
                 setAmountB("");
+                setLastEdited(null);
             } else {
                 setLiquidity("");
             }
@@ -116,7 +222,7 @@ export default function PoolPage() {
                         amount={amountA}
                         token={tokenA}
                         disabledTokens={aliasSymbols(tokenB)}
-                        onAmountChange={setAmountA}
+                        onAmountChange={onAmountAChange}
                         onTokenChange={setTokenA}
                     />
                     <div className="relative flex justify-center" aria-hidden="true">
@@ -136,9 +242,16 @@ export default function PoolPage() {
                         amount={amountB}
                         token={tokenB}
                         disabledTokens={aliasSymbols(tokenA)}
-                        onAmountChange={setAmountB}
+                        onAmountChange={onAmountBChange}
                         onTokenChange={setTokenB}
                     />
+                    {differentTokens && (
+                        <p className="px-1 pt-1 text-[11px] text-slate-500">
+                            {canAutoPopulate
+                                ? "Auto-balanced to the current pool ratio. Edit either side."
+                                : "First deposit — pick any ratio (it sets the price)."}
+                        </p>
+                    )}
                 </div>
             ) : (
                 <div
