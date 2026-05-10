@@ -1,9 +1,7 @@
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 
-function shortAddr(addr: string): string {
-    if (addr.length <= 10) return addr;
-    return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
-}
+import EtherscanIconLink from "./EtherscanIconLink.tsx";
+import { shortenAddress } from "../utils/address.ts";
 
 export default function ConnectWalletButton() {
     const { address, isConnected } = useAccount();
@@ -14,17 +12,23 @@ export default function ConnectWalletButton() {
 
     if (isConnected && address) {
         return (
-            <button
-                type="button"
-                onClick={() => disconnect()}
-                title="Click to disconnect"
-                className="rounded-md bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 px-3 py-1.5 text-sm font-medium text-slate-200 shadow-sm transition-colors duration-150"
-            >
-                <span className="inline-flex items-center gap-2">
-                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                    <span className="font-mono text-xs">{shortAddr(address)}</span>
-                </span>
-            </button>
+            <span className="inline-flex items-center gap-1.5">
+                <button
+                    type="button"
+                    onClick={() => disconnect()}
+                    title={`${address} — click to disconnect`}
+                    className="rounded-md bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 px-3 py-1.5 text-sm font-medium text-slate-200 shadow-sm transition-colors duration-150"
+                >
+                    <span className="inline-flex items-center gap-2">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        <span className="font-mono text-xs">{shortenAddress(address)}</span>
+                    </span>
+                </button>
+                <EtherscanIconLink
+                    value={address}
+                    className="text-slate-400 hover:text-white"
+                />
+            </span>
         );
     }
 

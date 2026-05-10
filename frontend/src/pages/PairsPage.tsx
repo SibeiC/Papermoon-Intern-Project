@@ -2,7 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useConfig } from "wagmi";
 
 import TokenLogo from "../components/TokenLogo.tsx";
+import EtherscanIconLink from "../components/EtherscanIconLink.tsx";
 import { listPairs } from "../services/pairs.ts";
+import { shortenAddress } from "../utils/address.ts";
 
 export default function PairsPage() {
     const config = useConfig();
@@ -88,8 +90,16 @@ export default function PairsPage() {
                                 <td className="px-4 py-2.5 text-right text-slate-300 tabular-nums">
                                     {formatReserve(p.reserve1)}
                                 </td>
-                                <td className="px-4 py-2.5 text-right font-mono text-xs text-slate-500">
-                                    {shortAddr(p.address)}
+                                <td className="px-4 py-2.5 text-right text-xs text-slate-500">
+                                    <span className="inline-flex items-center justify-end gap-1.5">
+                                        <span title={p.address} className="font-mono">
+                                            {shortenAddress(p.address)}
+                                        </span>
+                                        <EtherscanIconLink
+                                            value={p.address}
+                                            className="text-slate-500 hover:text-slate-300"
+                                        />
+                                    </span>
                                 </td>
                             </tr>
                         ))}
@@ -98,11 +108,6 @@ export default function PairsPage() {
             </div>
         </section>
     );
-}
-
-function shortAddr(addr: string): string {
-    if (addr.length <= 10) return addr;
-    return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 }
 
 // Format a numeric string with thousands separators, preserving the exact

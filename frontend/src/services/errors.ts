@@ -1,10 +1,3 @@
-export class NotImplementedError extends Error {
-    constructor(feature: string) {
-        super(`${feature} is not implemented — contracts not yet wired up.`);
-        this.name = "NotImplementedError";
-    }
-}
-
 // Thrown when the user dismisses the wallet popup (EIP-1193 code 4001 or
 // viem's UserRejectedRequestError). The page layer can detect via instanceof
 // and show a quiet "cancelled" instead of a stack-traced error toast.

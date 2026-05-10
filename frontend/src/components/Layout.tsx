@@ -49,8 +49,7 @@ export default function Layout() {
             <footer className="border-t border-white/10">
                 <div className="mx-auto max-w-5xl px-4 py-3 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                     <span>
-                        © {new Date().getFullYear()} Sibei Chen. Uniswap V2 study build — UI
-                        scaffold, no contracts wired.
+                        © {new Date().getFullYear()} Sibei Chen. Uniswap V2 study build.
                     </span>
                     <span className="flex items-center gap-3">
                         <a

@@ -6,10 +6,12 @@ import { sepolia } from "wagmi/chains";
 import { useQueryClient } from "@tanstack/react-query";
 
 import TokenLogo from "../components/TokenLogo.tsx";
+import EtherscanIconLink from "../components/EtherscanIconLink.tsx";
 import { ADDRESSES } from "../contracts/addresses.ts";
 import { TEST_ERC20_ABI } from "../contracts/abis/TestERC20.ts";
 import { WETH_ABI } from "../contracts/abis/WETH.ts";
 import { UserRejectedError, rethrowFriendly } from "../services/errors.ts";
+import { shortenAddress } from "../utils/address.ts";
 import { awaitConfirmation } from "../utils/tx.ts";
 
 type Phase = "idle" | "signing" | "confirming";
@@ -150,14 +152,16 @@ export default function FaucetPage() {
                     className="mb-3 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200"
                 >
                     Submitted:{" "}
-                    <a
-                        href={`https://sepolia.etherscan.io/tx/${lastTx}`}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="font-mono underline-offset-2 hover:underline"
-                    >
-                        {lastTx.slice(0, 10)}…{lastTx.slice(-8)}
-                    </a>
+                    <span className="inline-flex items-center gap-1.5">
+                        <span title={lastTx} className="font-mono">
+                            {shortenAddress(lastTx)}
+                        </span>
+                        <EtherscanIconLink
+                            value={lastTx}
+                            kind="tx"
+                            className="text-emerald-200 hover:text-emerald-100"
+                        />
+                    </span>
                 </div>
             )}
 
@@ -200,8 +204,14 @@ export default function FaucetPage() {
                                     <span className="block text-sm font-semibold text-white">
                                         {e.symbol}
                                     </span>
-                                    <span className="block text-xs text-slate-500 font-mono">
-                                        {e.address.slice(0, 6)}…{e.address.slice(-4)}
+                                    <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                                        <span title={e.address} className="font-mono">
+                                            {shortenAddress(e.address)}
+                                        </span>
+                                        <EtherscanIconLink
+                                            value={e.address}
+                                            className="text-slate-500 hover:text-slate-300"
+                                        />
                                     </span>
                                 </span>
                             </span>

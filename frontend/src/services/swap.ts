@@ -7,7 +7,7 @@ import { ROUTER_ADDRESS } from "../contracts/addresses.ts";
 import { UNISWAP_V2_ROUTER_ABI } from "../contracts/abis/UniswapV2Router.ts";
 import { TEST_ERC20_ABI } from "../contracts/abis/TestERC20.ts";
 import { buildSwapPath } from "../utils/path.ts";
-import { NotImplementedError, rethrowFriendly } from "./errors.ts";
+import { rethrowFriendly } from "./errors.ts";
 
 export interface SwapQuote {
     readonly amountOut: string;
@@ -139,6 +139,3 @@ async function ensureAllowance(
         args: [ROUTER_ADDRESS, MAX_UINT256],
     });
 }
-
-// Re-export so existing imports don't break if anyone imports it for catches.
-export { NotImplementedError };
