@@ -1,25 +1,20 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useConfig } from "wagmi";
+
 import TokenLogo from "../components/TokenLogo.tsx";
 import { listPairs } from "../services/pairs.ts";
-import type { Pair } from "../types/token.ts";
 
 export default function PairsPage() {
-    const [pairs, setPairs] = useState<readonly Pair[] | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        let cancelled = false;
-        listPairs()
-            .then((res) => {
-                if (!cancelled) setPairs(res);
-            })
-            .catch((e: unknown) => {
-                if (!cancelled) setError(e instanceof Error ? e.message : "Unknown error");
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, []);
+    const config = useConfig();
+    const {
+        data: pairs,
+        error,
+        isLoading,
+    } = useQuery({
+        queryKey: ["pairs"],
+        queryFn: () => listPairs(config),
+        staleTime: 30_000, // re-fetch at most every 30s
+    });
 
     return (
         <section style={{ animation: "fade-in 180ms ease-out" }}>
@@ -27,7 +22,7 @@ export default function PairsPage() {
                 <div>
                     <h1 className="text-lg font-semibold text-white">Pairs</h1>
                     <p className="text-xs text-slate-400">
-                        All pools indexed by the V2 Factory (mock data shown — not wired yet)
+                        All pools indexed by the V2 Factory on Sepolia
                     </p>
                 </div>
                 <span className="text-xs text-slate-500">
@@ -40,7 +35,7 @@ export default function PairsPage() {
                     role="alert"
                     className="mb-3 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200"
                 >
-                    {error}
+                    {error instanceof Error ? error.message : String(error)}
                 </div>
             )}
 
@@ -56,7 +51,7 @@ export default function PairsPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {pairs === null && !error && (
+                        {isLoading && !error && (
                             <tr>
                                 <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
                                     Loading…

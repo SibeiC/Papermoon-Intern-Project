@@ -3,6 +3,7 @@ import Layout from "./components/Layout.tsx";
 import SwapPage from "./pages/SwapPage.tsx";
 import PoolPage from "./pages/PoolPage.tsx";
 import PairsPage from "./pages/PairsPage.tsx";
+import FaucetPage from "./pages/FaucetPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage.tsx";
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
                 <Route path="/swap" element={<SwapPage />} />
                 <Route path="/pool" element={<PoolPage />} />
                 <Route path="/pairs" element={<PairsPage />} />
+                <Route path="/faucet" element={<FaucetPage />} />
                 <Route path="*" element={<NotFoundPage />} />
             </Route>
         </Routes>

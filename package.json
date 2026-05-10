@@ -1,16 +1,20 @@
 {
-    "name": "papermoon-intern-project",
+    "name": "uniswap-v2-study",
     "private": true,
     "version": "1.0.0",
     "scripts": {
-        "compile": "hardhat compile",
+        "compile": "hardhat compile && node scripts/copy-abis.js",
         "test": "hardhat test",
         "test:gas": "REPORT_GAS=true hardhat test",
-        "clean": "hardhat clean"
+        "clean": "hardhat clean",
+        "deploy:local": "hardhat run scripts/deploy.js --network hardhat",
+        "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
+        "verify:sepolia": "hardhat run scripts/verify.js --network sepolia"
     },
     "devDependencies": {
         "@nomicfoundation/hardhat-toolbox": "^5.0.0",
         "chai": "^4.5.0",
+        "dotenv": "^17.4.2",
         "ethers": "^6.13.0",
         "hardhat": "^2.22.0",
         "prettier": "^3.5.3",

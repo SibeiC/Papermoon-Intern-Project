@@ -20,7 +20,11 @@
         "noFallthroughCasesInSwitch": true,
         "noUncheckedIndexedAccess": true,
         "exactOptionalPropertyTypes": true,
-        "verbatimModuleSyntax": true
+        "verbatimModuleSyntax": true,
+
+        "paths": {
+            "@deployments/*": ["../deployments/*"]
+        }
     },
     "include": ["src"]
 }

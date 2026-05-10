@@ -1,19 +1,31 @@
 import { useState } from "react";
+import { useAccount, useConfig } from "wagmi";
+import { sepolia } from "wagmi/chains";
+import { useQueryClient } from "@tanstack/react-query";
+
 import Card from "../components/Card.tsx";
 import SlippageControl, { DEFAULT_AUTO_BPS } from "../components/SlippageControl.tsx";
 import TokenInput from "../components/TokenInput.tsx";
 import TokenSelect from "../components/TokenSelect.tsx";
 import { TOKENS } from "../data/tokens.ts";
 import { addLiquidity, removeLiquidity } from "../services/liquidity.ts";
+import { UserRejectedError } from "../services/errors.ts";
 import { isPositiveAmount, sanitizeAmountInput } from "../utils/amount.ts";
+import { awaitConfirmation } from "../utils/tx.ts";
 import type { Token } from "../types/token.ts";
 
 type Mode = "add" | "remove";
+type Phase = "idle" | "signing" | "confirming";
 
-const DEFAULT_A: Token = TOKENS[1]!; // ETH
+const DEFAULT_A: Token = TOKENS[0]!; // SBC (every pool seeded on Sepolia is SBC-paired)
 const DEFAULT_B: Token = TOKENS[5]!; // USDC
 
 export default function PoolPage() {
+    const config = useConfig();
+    const queryClient = useQueryClient();
+    const { isConnected, chainId } = useAccount();
+    const onSepolia = chainId === sepolia.id;
+
     const [mode, setMode] = useState<Mode>("add");
     const [tokenA, setTokenA] = useState<Token>(DEFAULT_A);
     const [tokenB, setTokenB] = useState<Token>(DEFAULT_B);
@@ -21,11 +33,14 @@ export default function PoolPage() {
     const [amountB, setAmountB] = useState("");
     const [liquidity, setLiquidity] = useState("");
     const [error, setError] = useState<string | null>(null);
-    const [pending, setPending] = useState(false);
+    const [phase, setPhase] = useState<Phase>("idle");
+    const pending = phase !== "idle";
 
     const [slippageBps, setSlippageBps] = useState(DEFAULT_AUTO_BPS);
 
     const canSubmit =
+        isConnected &&
+        onSepolia &&
         tokenA.symbol !== tokenB.symbol &&
         (mode === "add"
             ? isPositiveAmount(amountA) && isPositiveAmount(amountB)
@@ -33,24 +48,52 @@ export default function PoolPage() {
 
     async function handleSubmit() {
         setError(null);
-        setPending(true);
+        setPhase("signing");
         try {
+            const hash =
+                mode === "add"
+                    ? await addLiquidity(config, {
+                          tokenA,
+                          tokenB,
+                          amountA,
+                          amountB,
+                          slippageBps,
+                      })
+                    : await removeLiquidity(config, {
+                          tokenA,
+                          tokenB,
+                          liquidity,
+                          slippageBps,
+                      });
+            setPhase("confirming");
+            await awaitConfirmation(config, hash);
+            await queryClient.invalidateQueries();
             if (mode === "add") {
-                await addLiquidity({ tokenA, tokenB, amountA, amountB, slippageBps });
+                setAmountA("");
+                setAmountB("");
             } else {
-                await removeLiquidity({ tokenA, tokenB, liquidity, slippageBps });
+                setLiquidity("");
             }
         } catch (e) {
-            setError(e instanceof Error ? e.message : "Unknown error");
+            if (e instanceof UserRejectedError) setError(e.message);
+            else setError(e instanceof Error ? e.message : "Unknown error");
         } finally {
-            setPending(false);
+            setPhase("idle");
         }
     }
+
+    let buttonLabel: string;
+    if (phase === "signing") buttonLabel = "Confirm in wallet…";
+    else if (phase === "confirming") buttonLabel = "Confirming on-chain…";
+    else if (!isConnected) buttonLabel = "Connect wallet";
+    else if (!onSepolia) buttonLabel = "Switch to Sepolia";
+    else if (tokenA.symbol === tokenB.symbol) buttonLabel = "Select different tokens";
+    else buttonLabel = mode === "add" ? "Supply liquidity" : "Withdraw liquidity";
 
     return (
         <Card
             title="Pool"
-            subtitle="Provide or withdraw liquidity (placeholder — not wired yet)"
+            subtitle="Provide or withdraw liquidity on the Sepolia V2 Router"
             actions={
                 <ModeToggle
                     mode={mode}
@@ -170,13 +213,7 @@ export default function PoolPage() {
                 disabled={!canSubmit || pending}
                 className="mt-4 w-full rounded-xl bg-violet-500 hover:bg-violet-400 active:bg-violet-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition-all duration-150 hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500 disabled:shadow-none disabled:hover:scale-100"
             >
-                {pending
-                    ? "Submitting…"
-                    : tokenA.symbol === tokenB.symbol
-                      ? "Select different tokens"
-                      : mode === "add"
-                        ? "Supply liquidity"
-                        : "Withdraw liquidity"}
+                {buttonLabel}
             </button>
         </Card>
     );

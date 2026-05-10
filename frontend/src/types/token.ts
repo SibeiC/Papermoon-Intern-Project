@@ -3,6 +3,9 @@ export interface Token {
     readonly name: string;
     readonly decimals: number;
     readonly address: `0x${string}`;
+    // True for native ETH (whose Router path entries reference WETH but whose
+    // swap/liquidity flows use the ETH-variant Router functions with msg.value).
+    readonly isNative?: boolean;
 }
 
 export interface Pair {

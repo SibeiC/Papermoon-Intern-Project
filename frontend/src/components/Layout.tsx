@@ -1,9 +1,12 @@
 import { NavLink, Outlet } from "react-router-dom";
+import ConnectWalletButton from "./ConnectWalletButton.tsx";
+import NetworkBanner from "./NetworkBanner.tsx";
 
 const navItems = [
     { to: "/swap", label: "Swap" },
     { to: "/pool", label: "Pool" },
     { to: "/pairs", label: "Pairs" },
+    { to: "/faucet", label: "Faucet" },
 ] as const;
 
 function navLinkClass({ isActive }: { isActive: boolean }): string {
@@ -30,19 +33,10 @@ export default function Layout() {
                             ))}
                         </nav>
                     </div>
-                    <button
-                        type="button"
-                        className="rounded-md bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 px-3 py-1.5 text-sm font-medium text-slate-300 shadow-sm transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-60"
-                        disabled
-                        title="Wallet connection — not yet implemented"
-                    >
-                        <span className="inline-flex items-center gap-2">
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
-                            Connect Wallet
-                        </span>
-                    </button>
+                    <ConnectWalletButton />
                 </div>
             </header>
+            <NetworkBanner />
             <main className="flex-1">
                 <div className="mx-auto max-w-5xl px-4 py-8">
                     <Outlet />

@@ -1,0 +1,67 @@
+{
+    "chainId": 11155111,
+    "network": "sepolia",
+    "deployedAt": "2026-05-10T09:44:13.201Z",
+    "deployer": "0xfA962ec41266CCE9c73a5Fa54beF1a4CC0B66Ddc",
+    "factory": "0x9f7e28B69515E305571C42A2A65187acf8914Ba0",
+    "router": "0xc548b5613F70ce26a14b7C85013AD91441601594",
+    "weth": "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
+    "tokens": {
+        "SBC": {
+            "address": "0xd6f9e7be37ec0d952c01448bd6a4e176641e519d",
+            "decimals": 18,
+            "name": "SibeiCoin",
+            "mintMode": "owner",
+            "preDeployed": true
+        },
+        "WETH": {
+            "address": "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
+            "decimals": 18,
+            "name": "Wrapped Ether",
+            "mintMode": "wrap"
+        },
+        "USDT": {
+            "address": "0x3533CD68a326AEE55cdcC38eEC569e552578ac1f",
+            "decimals": 6,
+            "name": "Tether USD",
+            "mintMode": "faucet",
+            "faucetCap": "1000000000"
+        },
+        "USDC": {
+            "address": "0x809FB5dc975971762259Be2AAc30C46F28fE62bC",
+            "decimals": 6,
+            "name": "USD Coin",
+            "mintMode": "faucet",
+            "faucetCap": "1000000000"
+        },
+        "BTC": {
+            "address": "0x1c98882ec570416297Aa94F4c9c7fbfa5D3bd8d2",
+            "decimals": 8,
+            "name": "Wrapped Bitcoin (Mock)",
+            "mintMode": "faucet",
+            "faucetCap": "100000000"
+        }
+    },
+    "pairs": [
+        {
+            "address": "0x51051f82158421Af9324B63D8baAFC2a664dda55",
+            "tokenA": "SBC",
+            "tokenB": "WETH"
+        },
+        {
+            "address": "0xd96a408eB41DfE42dF2432306Bd0E35392b8cB56",
+            "tokenA": "SBC",
+            "tokenB": "USDT"
+        },
+        {
+            "address": "0x09f495f7BBFd4c59E55135C63282407c7519c296",
+            "tokenA": "SBC",
+            "tokenB": "USDC"
+        },
+        {
+            "address": "0xF94Bad8Fa46829e5246A98f45092baB300aCa043",
+            "tokenA": "SBC",
+            "tokenB": "BTC"
+        }
+    ]
+}
