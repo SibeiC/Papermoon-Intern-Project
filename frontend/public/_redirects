@@ -1,0 +1,5 @@
+# SPA fallback: any path that doesn't match a real built asset (CSS/JS/images
+# under /assets, the token logos under /tokens, /favicon.ico, etc.) gets
+# rewritten to index.html with a 200 status. React Router then handles the
+# route on the client. Recognized by Cloudflare Pages and Netlify.
+/*    /index.html   200
